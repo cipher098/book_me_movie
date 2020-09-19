@@ -97,7 +97,8 @@ class Movie(BaseModel):
     )
 
     # class Meta:
-    #     db_table = 'smart_parser_parser'
+    #     db_table = 'movie'
+    #     app_label = 'bookings.movie'
 
     def __str__(self):
         return f"Movie[id={self.id} uuid={self.uuid} name={self.name}]"

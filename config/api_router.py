@@ -2,6 +2,7 @@ from django.conf import settings
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from bmm.users.api.views import UserViewSet
+from bmm.bookings.api import MovieViewSet
 
 if settings.DEBUG:
     router = DefaultRouter()
