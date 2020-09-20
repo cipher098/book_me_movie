@@ -3,7 +3,6 @@ from datetime import date
 from django.db import models
 from django.db.models import IntegerField
 from django.utils.translation import gettext_lazy as _
-from django_extensions.db.fields.json import JSONField
 from django.contrib.postgres.fields import ArrayField
 
 from bmm.utils.models import BaseModel
@@ -242,13 +241,8 @@ class Show(BaseModel):
         null=False, blank=False
     )
 
-    end_time = models.DateTimeField(
-        verbose_name='End Time',
-        null=False, blank=False
-    )
-
     base_price = models.FloatField(
-        verbose_name='Price Multiplier',
+        verbose_name='Base Price',
         null=False, blank=False,
     )
 

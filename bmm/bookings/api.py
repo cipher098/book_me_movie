@@ -122,10 +122,19 @@ class ShowViewSet(viewsets.ModelViewSet):
     queryset = Show.objects.all()
     serializer_class = ShowSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = default_filterset_fields + ['start_time', 'end_time', 'base_price', 'movie', 'hall']
-    search_fields = default_search_fields + ['start_time', 'end_time', 'base_price', 'movie', 'hall']
-    ordering_fields = default_ordering_fields + ['start_time', 'end_time', 'base_price', 'movie', 'hall']
+    filterset_fields = default_filterset_fields + ['start_time', 'base_price', 'movie', 'hall']
+    search_fields = default_search_fields + ['start_time', 'base_price', 'movie', 'hall']
+    ordering_fields = default_ordering_fields + ['start_time', 'base_price', 'movie', 'hall']
     ordering = ['-created']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # call your function Eg.
+        # call_my_function()
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class BookingViewSet(viewsets.ModelViewSet):

@@ -87,10 +87,9 @@ class SeatSerializer(ModelSerializer):
 
 class ShowSerializer(ModelSerializer):
     class Meta:
-        model = Seat
+        model = Show
         model_specific_fields = [
             'start_time',
-            'end_time',
             'base_price',
             'movie',
             'hall',
