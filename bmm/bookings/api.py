@@ -15,6 +15,11 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 from bmm.bookings.models import (
     Movie,
     Theatre,
@@ -35,6 +40,10 @@ from bmm.bookings.serializers import (
     ShowSerializer,
     BookingSerializer,
     TicketSerializer,
+)
+
+from bmm.bookings.services import (
+    TicketServices
 )
 
 logger = logging.getLogger(__name__)
@@ -130,9 +139,8 @@ class ShowViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # call your function Eg.
-        # call_my_function()
         self.perform_create(serializer)
+        TicketServices.create_tickets_for_show(serializer.data.get('id', None))
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 

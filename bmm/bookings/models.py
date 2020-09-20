@@ -228,7 +228,7 @@ class Seat(BaseModel):
     #     db_table = 'smart_parser_parser'
 
     def __str__(self):
-        return f"Seat [id={self.id} uuid={self.uuid} name={self.name}]"
+        return f"Seat [id={self.id} uuid={self.uuid} row={self.row} column={self.column}]"
 
 
 class Show(BaseModel):
@@ -264,7 +264,7 @@ class Show(BaseModel):
     #     db_table = 'smart_parser_parser'
 
     def __str__(self):
-        return f"Show [id={self.id} uuid={self.uuid} name={self.name}]"
+        return f"Show [id={self.id} uuid={self.uuid} start time={self.start_time}]"
 
 
 class Booking(BaseModel):
@@ -291,7 +291,7 @@ class Booking(BaseModel):
     #     db_table = 'smart_parser_parser'
 
     def __str__(self):
-        return f"Booking [id={self.id} uuid={self.uuid} name={self.name}]"
+        return f"Booking [id={self.id} uuid={self.uuid} price={self.price}]"
 
 
 
@@ -330,4 +330,4 @@ class Ticket(BaseModel):
     #     db_table = 'smart_parser_parser'
 
     def __str__(self):
-        return f"Show [id={self.id} uuid={self.uuid} name={self.name}]"
+        return f"Ticket [id={self.id} uuid={self.uuid} price={self.price}]"
