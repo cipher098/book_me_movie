@@ -15,3 +15,12 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+app.conf.beat_schedule = {
+    # Every 30 minutes, it checks and
+    'delete_if_unpaid': {
+        'task': 'delete_if_unpaid',
+        'schedule': 1800.0,
+    },
+}
+

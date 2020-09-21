@@ -287,6 +287,10 @@ class Booking(BaseModel):
         null=False, blank=False, default=False
     )
 
+    ticket_ids = ArrayField(
+        models.CharField(max_length=100, blank=False)
+    )
+
     # class Meta:
     #     db_table = 'smart_parser_parser'
 

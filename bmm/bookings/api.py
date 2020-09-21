@@ -1,8 +1,12 @@
 import logging
 from io import BytesIO
 from mimetypes import MimeTypes
-
+from datetime import datetime
 import django_filters
+
+from celery.utils.log import get_task_logger
+from celery import shared_task, chord, chain, group
+
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
@@ -43,7 +47,8 @@ from bmm.bookings.serializers import (
 )
 
 from bmm.bookings.services import (
-    TicketServices
+    TicketServices,
+    BookingServices,
 )
 
 logger = logging.getLogger(__name__)
@@ -140,7 +145,9 @@ class ShowViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        TicketServices.create_tickets_for_show(serializer.data.get('id', None))
+        show_id = serializer.data.get('id', None)
+        logger.info(f"Sending task for creating tickets for show id: {show_id}")
+        TicketServices.create_tickets_for_show.apply_async((show_id,))
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -157,6 +164,21 @@ class BookingViewSet(viewsets.ModelViewSet):
     search_fields = default_search_fields + ['price', 'tax', 'paid']
     ordering_fields = default_ordering_fields + ['price', 'tax', 'paid']
     ordering = ['-created']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        TicketServices.book_tickets(
+            serializer.data.get('ticket_ids', None),
+            serializer.data.get('id', None)
+        )
+        # Create 1 task to delete booking if payment not done after time.
+        BookingServices.delete_if_unpaid.apply_async((serializer.data.get('id', None),), countdown=100)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
 
 
 class TicketViewSet(viewsets.ModelViewSet):

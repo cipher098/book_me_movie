@@ -105,6 +105,7 @@ class BookingSerializer(ModelSerializer):
             'price',
             'tax',
             'paid',
+            'ticket_ids',
         ]
         fields = default_fields + model_specific_fields
         read_only_fields = default_readonly_fields
