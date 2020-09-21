@@ -160,23 +160,32 @@ class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = default_filterset_fields + ['price', 'tax', 'paid']
-    search_fields = default_search_fields + ['price', 'tax', 'paid']
-    ordering_fields = default_ordering_fields + ['price', 'tax', 'paid']
+    filterset_fields = default_filterset_fields + ['price', 'paid']
+    search_fields = default_search_fields + ['price', 'paid']
+    ordering_fields = default_ordering_fields + ['price', 'paid']
     ordering = ['-created']
+
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        TicketServices.book_tickets(
-            serializer.data.get('ticket_ids', None),
-            serializer.data.get('id', None)
-        )
-        # Create 1 task to delete booking if payment not done after time.
-        BookingServices.delete_if_unpaid.apply_async((serializer.data.get('id', None),), countdown=100)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        tickets_data = TicketServices.check_availability(serializer.validated_data.get('ticket_ids', None))
+        if tickets_data['available']:
+            serializer.validated_data['price'] = tickets_data['booking_price']
+            self.perform_create(serializer)
+            TicketServices.book_tickets(
+                serializer.data.get('ticket_ids', None),
+                serializer.data.get('id', None)
+            )
+            BookingServices.delete_if_unpaid.apply_async((serializer.data.get('id', None),), countdown=100)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        else:
+            response = {'error': f"Cannot complete booking because Tickets with ID's:"
+                                 f" {tickets_data['already_booked_ticket_ids']} are"
+                                 f" already booked. Please try booking other tickets."}
+            return Response(response, status=status.HTTP_409_CONFLICT)
 
 
 

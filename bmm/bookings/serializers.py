@@ -103,7 +103,6 @@ class BookingSerializer(ModelSerializer):
         model = Booking
         model_specific_fields = [
             'price',
-            'tax',
             'paid',
             'ticket_ids',
         ]

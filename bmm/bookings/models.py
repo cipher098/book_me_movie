@@ -274,12 +274,7 @@ class Booking(BaseModel):
 
     price = models.FloatField(
         verbose_name='Price',
-        null=False, blank=False,
-    )
-
-    tax = models.FloatField(
-        verbose_name='Tax',
-        null=False, blank=False,
+        null=True, blank=True,
     )
 
     paid = models.BooleanField(

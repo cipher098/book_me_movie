@@ -3,6 +3,8 @@ from celery.utils.log import get_task_logger
 from celery import shared_task, chord, chain, group
 
 from django.utils import timezone
+from django.db.models import Sum
+
 
 from bmm.bookings.models import (
     Movie,
@@ -44,16 +46,37 @@ class TicketServices:
 
     @staticmethod
     def book_tickets(ticket_ids, booking_id):
-
+        logger.info(f"Booking tickets with ID: {ticket_ids} for Booking ID: {booking_id}")
         booking = Booking.objects.get(id=booking_id)
+        total_price = 0
 
         tickets = []
         for ticket_id in ticket_ids:
             ticket = Ticket.objects.get(id=ticket_id)
             ticket.booking = booking
             tickets.append(ticket)
+            total_price += ticket.price
 
         Ticket.objects.bulk_update(tickets, ['booking'])
+
+        return total_price
+
+    @staticmethod
+    def check_availability(ticket_ids):
+        tickets = Ticket.objects.filter(id__in=ticket_ids)
+
+        response = {}
+        booked_tickets = tickets.filter(booking__isnull=False)
+        if not booked_tickets:
+            response['available'] = True
+            response['booking_price'] = tickets.aggregate(Sum('price'))['price__sum']
+        else:
+            response['available'] = False
+            response['already_booked_ticket_ids'] = list(booked_tickets.values_list('id', flat=True))
+
+
+        return response
+
 
 
 class BookingServices:
